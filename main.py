@@ -14,7 +14,7 @@ from discord.ext.commands import Bot
 from dotenv import load_dotenv
 load_dotenv()
 import asyncio
-import keepalive
+
 
 #PREFIX
 bot = commands.Bot(command_prefix="-", help_command=None)
@@ -348,7 +348,7 @@ for file in os.listdir("./cogs"):
         name = file[:-3] 
         bot.load_extension(f"cogs.{name}") 
 
-keepalive.keep_alive()
+
 
 token = os.environ['TOKEN']
 bot.run(token)
