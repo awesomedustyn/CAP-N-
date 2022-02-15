@@ -14,6 +14,7 @@ from discord.ext.commands import Bot
 from dotenv import load_dotenv
 load_dotenv()
 import asyncio
+import auth
 
 
 #PREFIX
@@ -44,6 +45,10 @@ f.close()
 
 f = open('logins.json', 'r') 
 util.loginsDictionary = json.load(f)
+f.close()
+
+f = open('proxies.json', 'r')
+util.proxies = json.load(f)
 f.close()
 
 #ON_READY
@@ -152,9 +157,10 @@ async def store(ctx):
     username = util.decrypt(util.loginsDictionary[userId][0])
     password = util.decrypt(util.loginsDictionary[userId][1])
     region = util.loginsDictionary[userId][2]
-    token = util.getToken(username, password)
-    entitlement = util.getEntitlement(token)
-    puuid = util.getPUUID(token)
+    TnEN = await auth.getToken(username, password)
+    token = TnEN[0]
+    entitlement = TnEN[1]
+    puuid = await util.getPUUID(token)
     result = util.getStore(region, puuid, token, entitlement)
     if result == "-1":
       await ctx.send("Couldnt fetch store, try again later or log out and log back in!")
@@ -197,9 +203,10 @@ async def balance(ctx):
     username = util.decrypt(util.loginsDictionary[userId][0])
     password = util.decrypt(util.loginsDictionary[userId][1])
     region = util.loginsDictionary[userId][2]
-    token = util.getToken(username, password)
-    entitlement = util.getEntitlement(token)
-    puuid = util.getPUUID(token)
+    TnEN = await auth.getToken(username, password)
+    token = TnEN[0]
+    entitlement = TnEN[1]
+    puuid = await util.getPUUID(token)
     result = util.getBalance(region, puuid, token, entitlement)
     if result == "-1":
       await ctx.send("Couldnt fetch balance, try again later or log out and log back in!")
@@ -238,9 +245,10 @@ async def matchstats(ctx):
     username = util.decrypt(util.loginsDictionary[userId][0])
     password = util.decrypt(util.loginsDictionary[userId][1])
     region = util.loginsDictionary[userId][2]
-    token = util.getToken(username, password)
-    entitlement = util.getEntitlement(token)
-    puuid = util.getPUUID(token)
+    TnEN = await auth.getToken(username, password)
+    token = TnEN[0]
+    entitlement = TnEN[1]
+    puuid = await util.getPUUID(token)
     result = util.matchStats(region, puuid, entitlement, token)
     if result['status'] == -1:
       await ctx.send("Couldnt fetch match stats, to use this command you must be currently in a game. Agent select does not count!")
@@ -310,7 +318,7 @@ async def rank(ctx, name=' ', region=' ', *, act=' '):
       tag = name[util.indexOf(name, '#')+1:]
       name = name[0:util.indexOf(name, '#')]
       await ctx.send(f"fetching {name}#{tag}'s rank in {act}!")
-      output = util.getRankByName(name, tag, region, act)
+      output = await util.getRankByName(name, tag, region, act)
       url = f'https://valorant-api.com/v1/competitivetiers'
       y = requests.get(url).json()
       if output[0] == 50:
@@ -347,8 +355,6 @@ for file in os.listdir("./cogs"):
     if file.endswith(".py"):
         name = file[:-3] 
         bot.load_extension(f"cogs.{name}") 
-
-
 
 token = os.environ['TOKEN']
 bot.run(token)
