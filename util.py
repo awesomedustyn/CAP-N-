@@ -1,6 +1,10 @@
 import os
 import json
+import asyncio
+import aiohttp
 import requests
+import auth
+
 from datetime import datetime
 from datetime import date
 
@@ -10,70 +14,21 @@ inGameWeaponsDictionary = {}
 agentsDictionary = {}
 actsDictionary = {}
 loginsDictionary = {}
+proxies = []
 rankColors = {0:0x5b5b5b,1:0x5b5b5b,2:0x5b5b5b,3:0x404040,4:0x404040,5:0x404040,6:0x86592d,7:0x86592d,8:0x86592d,9:0xbfbfbf,10:0xbfbfbf,11:0xbfbfbf,12:0xe6b800,13:0xe6b800,14:0xe6b800,15:0x00a3cc,16:0x00a3cc,17:0x00a3cc,18:0xff66cc,19:0xff66cc,20:0xff66cc,21:0xff1a1a,22:0xff1a1a,23:0xff1a1a,24:0xffffff}
 defaultRegion = 'na'
 clientPlatform = "ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9"
-defaultToken = os.environ['DefaultToken']
 
-
-def getToken(user, password):
-  url = "https://auth.riotgames.com/api/v1/authorization"
-  headers = {'Content-Type': 'application/json'}
-  body = {
-        'client_id': 'play-valorant-web-prod',
-        'response_type': 'token id_token',
-        'redirect_uri': 'https://playvalorant.com/opt_in',
-        'scope': 'account openid',
-        'nonce': '1'
-        }
-  req1 = requests.post(url, headers=headers, data=json.dumps(body))
-  print("request one (get cookie): "+str(req1.status_code))
-  setCookies = req1.headers['set-cookie']
-  cookies = {}
-  keyAndValues = []
-  old = -2
-  for i in range(len(setCookies)):
-    if setCookies[i:i + 2] == "; ":
-      keyAndValues.append(setCookies[old + 2:i])
-      old = i
-  keyAndValues.append(setCookies[old:len(setCookies)])
-  for i in keyAndValues:
-    y = 0
-    for n in i:
-      if n == "=":
-        x = y
-      y = y + 1
-    y = 0
-    cookies.update({i[0:x]: i[x + 1:]})
-  asid = cookies["Secure, asid"]
-  asid = "asid=" + asid
-  url = "https://auth.riotgames.com/api/v1/authorization"
-  headers = {'Content-Type': 'application/json',
-              'Cookie': asid
-              }
-  body = {
-      "type": "auth",
-      "username": user,
-      "password": password
-    }
-  req2 = requests.put(url, headers=headers, data=json.dumps(body))
-  print("request two (get token): " + str(req2.status_code))
-  if req2.text[0:36] == '{"type":"auth","error":"auth_failure':
-    return "-1"
-  y = req2.text
-  for i in range(len(y)):
-    if y[i:i+5] == "&scop":
-      token = y[115:i]
-  return token
-
-def getPUUID(token):
+async def getPUUID(token):
+  session = aiohttp.ClientSession()
   url = 'https://auth.riotgames.com/userinfo'
   headers = {
       'Authorization': f'Bearer {token}'
   }
-  req3 = requests.get(url, headers=headers)
-  print("request three (get puuid): " + str(req3.status_code))
-  puuid = req3.text[24:60]
+  async with session.get(url, json = {}, headers=headers) as req3:
+    data = await req3.json()
+  puuid = data["sub"]
+  await session.close()
   return puuid
 
 def getActs():
@@ -143,22 +98,17 @@ def getInGameWeapons():
     json.dump(inGameWeaponsDictionary, f)
     f.close()
 
+def shiftProxies():
+  proxyShift = proxies[0]
+  proxies.pop(0)
+  proxies.append(proxyShift)
+    
+
 def indexOf(s, find):
     for i in range(len(s)):
         if s[i:i+len(find)] == find:
             return i
     return -1
-
-def getEntitlement(token):
-  url = "https://entitlements.auth.riotgames.com/api/token/v1"
-  headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
-  }
-  req4 = requests.post(url, headers=headers)
-  print("request four (get entitlement): " + str(req4.status_code))
-  entitlement = req4.text[23:-2]
-  return entitlement
 
 def encrypt(s):
   newS = ""
@@ -187,8 +137,6 @@ def decrypt(s):
   newS = ""
   chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890"
   chars2 = "0abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 123456789"
-  charList = []
-  charList2 = []
   ASCIIchars = []
   while s != '':
     ASCIIchars.append(s[0:indexOf(s,'.')])
@@ -241,7 +189,7 @@ def getMaxRank(region, en, t, puuid):
         'X-Riot-ClientVersion': getValoVersion(),
         'X-Riot-ClientPlatform': clientPlatform
   }
-  r = requests.get(url, headers=headers)
+  r = requests.get(url, json = {}, headers=headers)
   y = r.json()
   if str(r.status_code) != "200":
     return -1
@@ -271,11 +219,12 @@ def getOtherPUUID(name, tagline, region):
     else:
       return "-1"
 
-def getRankByName(name, tag, region, act):
+async def getRankByName(name, tag, region, act):
   user = os.environ['user']
   password = os.environ['password']
-  t = getToken(user,password)
-  en = getEntitlement(t)
+  TnEN = await auth.getToken(user, password)
+  t = TnEN[0]
+  en = TnEN[1]
   puuid = getOtherPUUID(name, tag, region)
   if puuid == "429":
     return "We've been rate limited! Try again in 10 seconds"
@@ -369,18 +318,20 @@ def getMatchRanks(region, en, t, puuid):
     return output
 
 def getBalance(region, puuid, t, en):
-    url = f'https://pd.{region}.a.pvp.net/store/v1/wallet/{puuid}'
-    headers = headers = {
-        'X-Riot-Entitlements-JWT': en,
-        'Authorization': f'Bearer {t}'
-    }
-    r = requests.get(url, headers=headers)
-    balance = [0,0]
-    if str(r.status_code) == "200":
-        y = r.json()
-        balance[0] = y['Balances']['85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741']
-        balance[1] = y['Balances']['e59aa87c-4cbf-517a-5983-6e81511be9b7']
-        return balance
+  url = f'https://pd.{region}.a.pvp.net/store/v1/wallet/{puuid}'
+  headers = headers = {
+      'X-Riot-Entitlements-JWT': en,
+      'Authorization': f'Bearer {t}'
+  }
+  r = requests.get(url, headers=headers)
+  balance = [0,0]
+  if str(r.status_code) == "200":
+    y = r.json()
+    balance[0] = y['Balances']['85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741']
+    balance[1] = y['Balances']['e59aa87c-4cbf-517a-5983-6e81511be9b7']
+    return balance
+  else:
+    return [-1, -1]
 
 
 def getStore(region, puuid, t, en):
@@ -391,8 +342,8 @@ def getStore(region, puuid, t, en):
   }
   r = requests.get(url, headers=headers)
   singleItems = ['', '', '', '']
+  y = r.json()
   if str(r.status_code) == "200":
-    y = r.json()
     singleItems[0] = weaponsDictionary[y['SkinsPanelLayout']['SingleItemOffers'][0]]
     singleItems[1] = weaponsDictionary[y['SkinsPanelLayout']['SingleItemOffers'][1]]
     singleItems[2] = weaponsDictionary[y['SkinsPanelLayout']['SingleItemOffers'][2]]
@@ -416,22 +367,23 @@ def getNameFromPUUID(puuid, region, token):
 
 
 def getCurrentMatchID(region, puuid, entitlement, token):
-    url = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/players/{puuid}'
-    headers = {
+  url = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/players/{puuid}'
+  headers = {
         'X-Riot-Entitlements-JWT': entitlement,
         'Authorization': f'Bearer {token}'
-    }
-    r = requests.get(url, headers=headers)
-    y = r.text
-    if str(r.status_code) != "200":
-        return "-1"
-    else:
-        output = y[indexOf(y,'MatchID')+10:indexOf(y,'","Version')]
-        return output
+  }
+  r = requests.get(url, headers=headers)
+  y = r.text
+  if str(r.status_code) != "200":
+    return "-1"
+  else:
+    output = y[indexOf(y,'MatchID')+10:indexOf(y,'","Version')]
+    return output
 
 def matchStats(region, puuid, entitlement, token):
-  if getCurrentMatchID(region, puuid, entitlement, token) != "-1":
-    matchid = getCurrentMatchID(region, puuid, entitlement, token)
+  matchID = getCurrentMatchID(region, puuid, entitlement, token)
+  if matchID != "-1":
+    matchid = matchID
   else:
     output = {'status': -1}
     return output
@@ -441,10 +393,10 @@ def matchStats(region, puuid, entitlement, token):
         'Authorization': f'Bearer {token}'
   }
   r = requests.get(url, headers=headers)
+  y = r.json()
   if str(r.status_code) != "200":
     output = {'status': -1}
     return output
-  y = r.json()
   players = y['Players']
   ffa = False
   if y['ModeID'] == '/Game/GameModes/Deathmatch/DeathmatchGameMode.DeathmatchGameMode_C':
@@ -478,21 +430,3 @@ def matchStats(region, puuid, entitlement, token):
       name = nameFromPUUID[0] + "#" + nameFromPUUID[1]
       output['players'].append({'puuid': y['Players'][i]['Subject'], 'name': name, 'agent': agentsDictionary[y['Players'][i]['CharacterID']], 'rank': rankData[0], 'rr': rankData[1], 'peak': rankData[2], 'peakSeason': rankData[3]})
     return output
-
-def getMatchSkins(region, puuid, entitlement, token):
-  if getCurrentMatchID(region, puuid, entitlement, token) != "-1":
-    matchid = getCurrentMatchID(region, puuid, entitlement, token)
-  else:
-    output = {'status': -1}
-    return output
-  url = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/matches/{matchid}/loadouts'
-  headers = {
-        'X-Riot-Entitlements-JWT': entitlement,
-        'Authorization': f'Bearer {token}'
-  }
-  r = requests.get(url, headers=headers)
-  if str(r.status_code) != "200":
-    output = {'status': -1}
-    return output
-  y = r.json()
-  players = y['Players']
