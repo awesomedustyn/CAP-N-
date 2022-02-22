@@ -1,6 +1,7 @@
 import json
 import requests
 import util
+from utils import generate_info_embed, generate_puzzle_embed, process_message_as_guess
 import discord
 from discord import Color 
 from discord.ext import commands
@@ -15,13 +16,26 @@ from dotenv import load_dotenv
 load_dotenv()
 import asyncio
 import auth
+import logging
+from typing import Optional
 
+import nextcord
+from nextcord.ext import commands
 
+logging.basicConfig(level=logging.INFO)
 #PREFIX
 bot = commands.Bot(command_prefix="-", help_command=None)
 slash = SlashCommand(bot, sync_commands=True)
 #ADD VARIABLES YOU WILL BE USING THROUGHOUT MAIN.PY HERE
 linebreak = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+
+GUILD_IDS = (
+    [int(guild_id) for guild_id in os.getenv("GUILD_IDS").split(",")]
+    if os.getenv("GUILD_IDS", None)
+    else nextcord.utils.MISSING
+)
+
+
 
 util.getActs()
 f = open('acts.json', 'r')
@@ -61,7 +75,45 @@ async def on_ready():
     await asyncio.sleep(1)
     print(linebreak)  
 
+@bot.slash_command(description="Play a game of Wordle Clone", guild_ids=GUILD_IDS)
+async def play(
+    interaction: nextcord.Interaction,
+    puzzle_id: int = nextcord.SlashOption(
+        description="Puzzle ID, leave out for a random puzzle", required=False
+    ),
+):
+    # generate puzzle embed
+    embed = generate_puzzle_embed(interaction.user, puzzle_id)
+    # send the puzzle as an interaction response
+    await interaction.send(embed=embed) 
+    
+@bot.command()
+async def play(ctx: commands.Context, puzzle_id: Optional[int] = None):
+    """Play a game of Wordle Clone"""
+    embed = generate_puzzle_embed(ctx.author, puzzle_id)
+    await ctx.reply(embed=embed, mention_author=False)
 
+@bot.slash_command(description="Info about Discord Wordle Clone", guild_ids=GUILD_IDS)
+async def infohelp(interaction: nextcord.Interaction):
+    await interaction.send(embed=generate_info_embed())
+
+
+@bot.command()
+async def infohelp(ctx: commands.Context):
+    """Info about Discord Wordle Clone"""
+    await ctx.reply(embed=generate_info_embed(), mention_author=False)
+    
+@bot.event
+async def on_message(message: nextcord.Message):
+    """
+    When a message is sent, process it as a guess.
+    Then, process any commands in the message if it's not a guess.
+    """
+    processed_as_guess = await process_message_as_guess(bot, message)
+    if not processed_as_guess:
+        await bot.process_commands(message)
+
+    
 @bot.command()
 async def load(ctx, extension):
     bot.load_extension(f'cogs.{extension}') #loads the extension in the "cogs" folder
