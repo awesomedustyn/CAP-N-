@@ -21,4 +21,4 @@ requests==2.27.1
 typing-extensions==4.0.1
 urllib3==1.26.8
 werkzeug==2.0.2
-nextcord>=2.0.0a8
+nextcord==2.0.0a8
