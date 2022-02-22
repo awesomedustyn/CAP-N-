@@ -112,8 +112,8 @@ def indexOf(s, find):
 
 def encrypt(s):
   newS = ""
-  chars = """abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*();:'"[{]}/.>,<|\1234567890"""
-  chars2 = """0abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*();:'"[{]}/.>,<|\123456789"""
+  chars = """abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*();:'"[{]}.>,<|1234567890"""
+  chars2 = """0abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*();:'"[{]}.>,<|123456789"""
   charList = []
   charList2 = []
   ASCIIchars = []
@@ -135,8 +135,8 @@ def encrypt(s):
 
 def decrypt(s):
   newS = ""
-  chars = """abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*();:'"[{]}/.>,<|\1234567890"""
-  chars2 = """0abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*();:'"[{]}/.>,<|\123456789"""
+  chars = """abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*();:'"[{]}.>,<|1234567890"""
+  chars2 = """0abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*();:'"[{]}.>,<|123456789"""
   ASCIIchars = []
   while s != '':
     ASCIIchars.append(s[0:indexOf(s,'.')])
