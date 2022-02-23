@@ -1,7 +1,6 @@
 import json
 import requests
 import util
-from utils import generate_info_embed, generate_puzzle_embed, process_message_as_guess
 import discord
 from discord import Color 
 from discord.ext import commands
