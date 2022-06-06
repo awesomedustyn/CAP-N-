@@ -2,6 +2,7 @@ import json
 import requests
 import util
 import discord
+from datetime import datetime, date, time, timezone
 from discord import Color 
 from discord.ext import commands
 from discord import Guild, Member, Embed, Client, Intents
@@ -16,7 +17,7 @@ load_dotenv()
 import asyncio
 import auth
 import logging
-
+time = datetime.utcnow()
 
 #PREFIX
 bot = commands.Bot(command_prefix="-", help_command=None)
@@ -24,11 +25,9 @@ slash = SlashCommand(bot, sync_commands=True)
 #ADD VARIABLES YOU WILL BE USING THROUGHOUT MAIN.PY HERE
 linebreak = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
 
-GUILD_IDS = (
-    [int(guild_id) for guild_id in os.getenv("GUILD_IDS").split(",")]
-    if os.getenv("GUILD_IDS", None)
-    else nextcord.utils.MISSING
-)
+
+  
+
 
 
 
@@ -115,6 +114,7 @@ async def load(ctx, extension):
                     ),
                   ])
                 )
+                
               ]
             )
 async def _login(ctx: SlashContext, username, password, region):
@@ -128,42 +128,55 @@ async def _login(ctx: SlashContext, username, password, region):
     f = open("logins.json", "w")
     json.dump(util.loginsDictionary, f)
     f.close()
-    await ctx.author.send(f'Succesfully logged in for {str(ctx.author)}')
+    if username == [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+      username == "*"
+    embedVar =   discord.Embed(title="Success!",description="CAP'N has linked your discord account to your valorant account!\n You can logout whenever with '-logout'.", color=0x00ff00)
+    embedVar.add_field(name="Discord", value=f"@{ctx.author}", inline=True)
+    await ctx.reply(embed=embedVar, hidden=True)
+
 
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        await ctx.send(f'This command is on cooldown, you can use it in {round(error.retry_after, 2)} seconds to avoid rate limits.')
-
-
-@bot.command()
-async def checklogins(ctx):
+        await ctx.channel.send(f'This command is on cooldown, you can use it in {round(error.retry_after, 2)} seconds to avoid rate limits.')
+      
+@slash.slash(name="checklogins",
+              description="Link your valorant account to the bot for certain commands",
+            )
+async def _checklogins(ctx):
   hasLogin = False
-  userId = str(ctx.message.author.id)
+  userId = str(ctx.author.id)
   userId = util.encrypt(userId)
   f = open("logins.json", "r")
   util.loginsDictionary = json.load(f)
   f.close()
   if userId in util.loginsDictionary:
-    await ctx.send(f"Found logins for {str(ctx.message.author)}!")
+    embedVar =   discord.Embed(title="Success!",description="CAP'N has found your logins in the database.", color=0x00ff00)
+    await ctx.reply(embed=embedVar, hidden=True)
   else:
-    await ctx.send("Couldnt find log ins, use /login to log in!")
+    embedVar =   discord.Embed(title="Error!",description="CAP'N couldn't find log ins, use /login to log in!", color=0x00ff00)
+    await ctx.reply(embed=embedVar, hidden=True)
+    
 
-@bot.command()
-async def store(ctx):
+
+
+@slash.slash(name="store",
+              description="Link your valorant account to the bot for certain commands",
+            )
+
+async def _store(ctx):
   hasLogin = False
   password = ""
   username = ""
   token = ""
   entitlement = ""
   puuid = ""
-  userId = str(ctx.message.author.id)
+  userId = str(ctx.author.id)
   userId = util.encrypt(userId)
   f = open("logins.json", "r")
   util.loginsDictionary = json.load(f)
   f.close()
   if userId in util.loginsDictionary:
-    await ctx.send("Found logins, please wait while I retreive your store!")
     hasLogin = True
     username = util.decrypt(util.loginsDictionary[userId][0])
     password = util.decrypt(util.loginsDictionary[userId][1])
@@ -173,43 +186,57 @@ async def store(ctx):
     entitlement = TnEN[1]
     puuid = await util.getPUUID(token)
     result = util.getStore(region, puuid, token, entitlement)
+    embedvar = discord.Embed(title=f"{ctx.author.display_name}'s Store ",description="Please wait while I retreive your store!")
+    embedvar.timestamp = datetime.utcnow() 
+    embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
+    await ctx.reply(embed=embedvar)
     if result == "-1":
       await ctx.send("Couldnt fetch store, try again later or log out and log back in!")
     else:
       embed= discord.Embed(title=result['displayNames'][0], color=(0xF85252))
       embed.set_thumbnail(url= f"https://media.valorant-api.com/weaponskinlevels/{result['uuids'][0]}/displayicon.png")
-      embed.set_footer(text=f"{ctx.author.display_name}'s store")
-      await ctx.send(embed=embed)
+      embed.set_footer(text=f"")
+      await ctx.channel.send(embed=embed)
+      
       embed= discord.Embed(title=result['displayNames'][1], color=(0xF85252))
       embed.set_thumbnail(url= f"https://media.valorant-api.com/weaponskinlevels/{result['uuids'][1]}/displayicon.png")
-      embed.set_footer(text=f"{ctx.author.display_name}'s store")
-      await ctx.send(embed=embed)
+      embed.set_footer(text=f"")
+      await ctx.channel.send(embed=embed)
+      
       embed= discord.Embed(title=result['displayNames'][2], color=(0xF85252))
       embed.set_thumbnail(url= f"https://media.valorant-api.com/weaponskinlevels/{result['uuids'][2]}/displayicon.png")
-      embed.set_footer(text=f"{ctx.author.display_name}'s store")
-      await ctx.send(embed=embed)
+      embed.set_footer(text=f"")
+      await ctx.channel.send(embed=embed)
+      
       embed= discord.Embed(title=result['displayNames'][3], color=(0xF85252))
       embed.set_thumbnail(url= f"https://media.valorant-api.com/weaponskinlevels/{result['uuids'][3]}/displayicon.png")
-      embed.set_footer(text=f"{ctx.author.display_name}'s store")
-      await ctx.send(embed=embed)
+      embed.set_footer(text=f"")
+      await ctx.channel.send(embed=embed)
   if hasLogin == False:
-    await ctx.send("Couldnt find log ins, use /login to log in!")
-    
-@bot.command()
-async def balance(ctx):
+    embedVar =   discord.Embed(title="Error!",description="CAP'N couldn't find log ins, use /login to log in!", color=0xF85252)
+    await ctx.reply(embed=embedVar, hidden=True)
+  
+@slash.slash(name="balance",
+              description="Link your valorant account to the bot for certain commands",
+            )
+
+async def _balance(ctx):
   hasLogin = False
   password = ""
   username = ""
   token = ""
   entitlement = ""
   puuid = ""
-  userId = str(ctx.message.author.id)
+  userId = str(ctx.author.id)
   userId = util.encrypt(userId)
   f = open("logins.json", "r")
   util.loginsDictionary = json.load(f)
   f.close()
   if userId in util.loginsDictionary:
-    await ctx.send("Found logins, please wait while I retreive your balance!!")
+    embedvar = discord.Embed(title=f"{ctx.author.display_name}'s Balance ",description="Please wait while I retreive your balane!")
+    embedvar.timestamp = datetime.utcnow() 
+    embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
+    await ctx.reply(embed=embedvar)
     hasLogin = True
     username = util.decrypt(util.loginsDictionary[userId][0])
     password = util.decrypt(util.loginsDictionary[userId][1])
@@ -220,23 +247,28 @@ async def balance(ctx):
     puuid = await util.getPUUID(token)
     result = util.getBalance(region, puuid, token, entitlement)
     if result == "-1":
-      await ctx.send("Couldnt fetch balance, try again later or log out and log back in!")
+      embedVar = discord.Embed(title="Error!",description="CAP'N couldn't fetch balance, try again later or log out and log back in!", color=0xF85252)
+      await ctx.reply(embed=embedVar, hidden=True)
     else:
       embed= discord.Embed(title="Valorant Points", color=(0xF85252))
       embed.set_thumbnail(url= "https://cdn.discordapp.com/attachments/887135838092296316/934184475628294145/128.png")
       embed.add_field(name="Amount", value=f"{result[0]}")
-      embed.set_footer(text=f"{ctx.author.display_name}'s balance")
-      await ctx.send(embed=embed)
+      embed.set_footer(text=f"")
+      await ctx.channel.send(embed=embed)
       embed= discord.Embed(title="Radianite Points", color=(0xF85252))
       embed.set_thumbnail(url= "https://cdn.discordapp.com/attachments/887135838092296316/934184784970793060/128.png")
       embed.add_field(name="Amount", value=f"{result[1]}")
-      embed.set_footer(text=f"{ctx.author.display_name}'s balance")
-      await ctx.send(embed=embed)
+      embed.set_footer(text=f"")
+      await ctx.channel.send(embed=embed)
   if hasLogin == False:
-    await ctx.send("Couldnt find log ins, use /login to log in!")
+    embedVar =   discord.Embed(title="Error!",description="CAP'N couldn't find log ins, use /login to log in!", color=0xF85252)
+    await ctx.reply(embed=embedVar, hidden=True)
 
 
-@bot.command()
+    
+@slash.slash(name="matchstats",
+              description="Link your valorant account to the bot for certain commands",
+            )
 @commands.cooldown(1, 60, commands.BucketType.default)
 async def matchstats(ctx):
   hasLogin = False
@@ -245,13 +277,19 @@ async def matchstats(ctx):
   token = ""
   entitlement = ""
   puuid = ""
-  userId = str(ctx.message.author.id)
+  userId = str(ctx.author.id)
   userId = util.encrypt(userId)
   f = open("logins.json", "r")
   util.loginsDictionary = json.load(f)
   f.close()
   if userId in util.loginsDictionary:
-    await ctx.send("Found logins, retreiving match stats will take 5-15 seconds, if it takes more than 20 seconds, assume we've been rate limited and try again in 2 minutes!")
+    embedvar = discord.Embed(title=f"Warning!",description="retreiving match stats will take 5-15 seconds, if it takes more than 20 seconds, assume we've been rate limited and try again in 2 minutes!")
+    embedvar.timestamp = datetime.utcnow() 
+    embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
+    await ctx.reply(embed=embedvar, hidden=True)
+    await asyncio.sleep(6) 
+    await ctx.message.delete()
+    
     hasLogin = True
     username = util.decrypt(util.loginsDictionary[userId][0])
     password = util.decrypt(util.loginsDictionary[userId][1])
@@ -262,8 +300,11 @@ async def matchstats(ctx):
     puuid = await util.getPUUID(token)
     result = util.matchStats(region, puuid, entitlement, token)
     if result['status'] == -1:
-      await ctx.send("Couldnt fetch match stats, to use this command you must be currently in a game. Agent select does not count!")
-    else:
+      embedvar = discord.Embed(title=f"Error!",description="Couldnt fetch match stats, to use this command you must be currently in a game. Agent select does not count!")
+    embedvar.timestamp = datetime.utcnow()
+    embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
+    await ctx.reply(embed=embedvar, hidden=True)
+  else:
       if result['ffa'] == 0:
         embed= discord.Embed(title=f"{ctx.author}'s Match Stats", color=(0xF85252))
         embed.set_thumbnail(url= "https://cdn.discordapp.com/attachments/822383742084579328/934640243657830410/85.png")
@@ -286,7 +327,15 @@ async def matchstats(ctx):
         await ctx.send(embed=embed)
   if hasLogin == False:
     await ctx.send("Couldnt find log ins, use /login to log in!")
-
+    
+@matchstats.error
+async def command_name_error(ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+          embedvar = discord.Embed(title=f"Warning!",description=f"Please wait **{error.retry_after:.2f}**s before using this command again!")
+          embedvar.timestamp = datetime.utcnow() 
+          embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
+          await ctx.reply(embed=embedvar)
+          
 @bot.command()
 async def logout(ctx):
   hasLogin = False
