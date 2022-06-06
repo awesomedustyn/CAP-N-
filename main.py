@@ -286,8 +286,8 @@ async def matchstats(ctx):
     embedvar = discord.Embed(title=f"Warning!",description="retreiving match stats will take 5-15 seconds, if it takes more than 20 seconds, assume we've been rate limited and try again in 2 minutes!")
     embedvar.timestamp = datetime.utcnow() 
     embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
-    await ctx.reply(embed=embedvar, hidden=True)
-    await asyncio.sleep(6) 
+    await ctx.reply(embed=embedvar)
+    await asyncio.sleep(3) 
     await ctx.message.delete()
     
     hasLogin = True
