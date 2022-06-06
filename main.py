@@ -264,8 +264,6 @@ async def _balance(ctx):
     embedVar =   discord.Embed(title="Error!",description="CAP'N couldn't find log ins, use /login to log in!", color=0xF85252)
     await ctx.reply(embed=embedVar, hidden=True)
 
-
-    
 @slash.slash(name="matchstats",
               description="Link your valorant account to the bot for certain commands",
             )
@@ -335,6 +333,8 @@ async def command_name_error(ctx, error):
           embedvar.timestamp = datetime.utcnow() 
           embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
           await ctx.reply(embed=embedvar)
+    
+
           
 @bot.command()
 async def logout(ctx):
