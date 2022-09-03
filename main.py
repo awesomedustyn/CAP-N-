@@ -130,7 +130,7 @@ async def _login(ctx: SlashContext, username, password, region):
     f.close()
     if username == [1, 2, 3, 4, 5, 6, 7, 8, 9]:
       username == "*"
-    embedVar =   discord.Embed(title="Success!",description="CAP'N has linked your discord account to your valorant account!\n You can logout whenever with '-logout'.", color=0x00ff00)
+    embedVar =   discord.Embed(title="Success!",description="CAP'N has linked your discord account to your valorant account!\n You can logout whenever with '-logout'..", color=0x00ff00)
     embedVar.add_field(name="Discord", value=f"@{ctx.author}", inline=True)
     await ctx.reply(embed=embedVar, hidden=True)
 
