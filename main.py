@@ -298,10 +298,10 @@ async def matchstats(ctx):
     result = util.matchStats(region, puuid, entitlement, token)
     if result['status'] == -1:
       embedvar = discord.Embed(title=f"Error!",description="Couldnt fetch match stats, to use this command you must be currently in a game. Agent select does not count!")
-    embedvar.timestamp = datetime.utcnow()
-    embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
-    await ctx.reply(embed=embedvar, hidden=True)
-  else:
+      embedvar.timestamp = datetime.utcnow()
+      embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
+      await ctx.reply(embed=embedvar, hidden=True)
+    else:
       if result['ffa'] == 0:
         embed= discord.Embed(title=f"{ctx.author}'s Match Stats", color=(0xF85252))
         embed.set_thumbnail(url= "https://cdn.discordapp.com/attachments/822383742084579328/934640243657830410/85.png")
