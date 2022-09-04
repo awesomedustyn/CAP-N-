@@ -18,6 +18,8 @@ import asyncio
 import auth
 import logging
 time = datetime.utcnow()
+import urllib3
+urllib3.disable_warnings()
 
 #PREFIX
 bot = commands.Bot(command_prefix="-", help_command=None)
