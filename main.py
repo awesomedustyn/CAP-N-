@@ -285,9 +285,6 @@ async def matchstats(ctx):
     embedvar.timestamp = datetime.utcnow() 
     embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
     await ctx.reply(embed=embedvar)
-    await asyncio.sleep(3) 
-    await ctx.message.delete()
-    
     hasLogin = True
     username = util.decrypt(util.loginsDictionary[userId][0])
     password = util.decrypt(util.loginsDictionary[userId][1])
