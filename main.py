@@ -313,7 +313,7 @@ async def matchstats(ctx):
         embed2.set_thumbnail(url= "https://cdn.discordapp.com/attachments/822383742084579328/934640243657830410/85.png")
         embed2.add_field(name="Red Team:", value="Heres everyone on the red team")
         for i in range(len(result['redTeam'])):
-          embed2.add_field(name=f"{result['redTeam'][i]['name']} ({result['redTeam'][i]['agent']})", value=f"rank: {result['redTeam'][i]['rank']}, rr: {result['redTeam'][i]['rr']}, peak: {result['redTeam'][i]['peak']}, peak EP/A: {result['redTeam'][i]['peakSeason']}")
+          embed2.add_field(name=f"{result['redTeam'][i]['name']} ({result['redTeam'][i]['agent']})", value=f"rank: {result['redTeam'][i]['rank']}, rr: {result['redTeam'][i]['rr']}, peak: {result['redTeam'][i]['peak']}, peak EP/A: {result['redTeam'][i]['peakSeason']}", inline = True)
         await ctx.send(embed=embed2)
       else:
         embed= discord.Embed(title=f"{ctx.author}'s Match Stats", color=(0xF85252))
