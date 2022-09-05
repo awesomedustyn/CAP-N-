@@ -389,13 +389,17 @@ def matchStats(region, puuid, entitlement, token):
     output = {'status': -1}
     return output
   url = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/matches/{matchid}'
+  url2 = f'url = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/matches/4c10454e-6185-49cf-9863-f36c0e8e9df9/loadouts'
   headers = {
         'X-Riot-Entitlements-JWT': entitlement,
         'Authorization': f'Bearer {token}'
   }
   r = requests.get(url, headers=headers)
   y = r.json()
+  r = get(url2, headers=headers)
+  x = r.json()
   print(y)
+  print(x)
   if str(r.status_code) != "200":
     output = {'status': -1}
     return output
