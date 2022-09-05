@@ -397,7 +397,9 @@ def stats(region, puuid, entitlement, token):
         'X-Riot-ClientPlatform': clientPlatform
   }
   r = requests.get(url3, headers=headers)
-  y = r.json()
+  if str(r.status_code) == "200":
+    y = r.json()
+    return y
   
   
   
