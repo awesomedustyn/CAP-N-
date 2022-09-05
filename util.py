@@ -53,7 +53,13 @@ def getActs():
     f = open("acts.json", "w")
     json.dump(actsDictionary, f)
     f.close()
-
+    
+def getValoVersion():
+    url = 'https://valorant-api.com/v1/version'
+    r = get(url)
+    y = r.json()
+    return y['data']['riotClientVersion']
+  
 def getAgents():
     url = 'https://valorant-api.com/v1/agents'
     r = requests.get(url)
@@ -380,7 +386,22 @@ def getCurrentMatchID(region, puuid, entitlement, token):
   else:
     output = y[indexOf(y,'MatchID')+10:indexOf(y,'","Version')]
     return output
-
+  
+  
+def stats(region, puuid, entitlement, token):
+  url3 = f'https://pd.{region}.a.pvp.net/match-history/v1/history/{puuid}'
+  headers = {
+        'X-Riot-Entitlements-JWT': entitlement,
+        'Authorization': f'Bearer {token}',
+        'X-Riot-ClientVersion': getValoVersion(),
+        'X-Riot-ClientPlatform': clientPlatform
+  }
+  r = requests.get(url3, headers=headers)
+  y = r.json()
+  
+  
+  
+  
 def matchStats(region, puuid, entitlement, token):
   matchID = getCurrentMatchID(region, puuid, entitlement, token)
   if matchID != "-1":
@@ -390,6 +411,7 @@ def matchStats(region, puuid, entitlement, token):
     return output
   url = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/matches/{matchid}'
   url2 = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/matches/{matchid}/loadouts'
+  url3 = f'https://pd.{region}.a.pvp.net/match-history/v1/history/{puuid}'
   headers = {
         'X-Riot-Entitlements-JWT': entitlement,
         'Authorization': f'Bearer {token}'
@@ -398,7 +420,6 @@ def matchStats(region, puuid, entitlement, token):
   y = r.json()
   r2 = requests.get(url2, headers=headers)
   x = r2.json()
-  loadout = x['Loadout']['Items']
   print(y)
   if str(r.status_code) != "200":
     output = {'status': -1}
@@ -408,9 +429,6 @@ def matchStats(region, puuid, entitlement, token):
   if y['ModeID'] == '/Game/GameModes/Deathmatch/DeathmatchGameMode.DeathmatchGameMode_C':
     ffa = True
   if ffa == False:
-    for i in loadout:
-      skin = weaponsDictionary[loadout[i]['9c82e19d-4575-0200-1a81-3eacf00cf872']['Sockets']['3ad1b2b2-acdb-4524-852f-954a76ddae0a']["Item"]["ID"]]
-      print(skin)
     output = {}
     output['status'] = 200
     output['ffa'] = 0
