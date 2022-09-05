@@ -297,6 +297,8 @@ async def _stats(ctx):
     entitlement = TnEN[1]
     puuid = await util.getPUUID(token)
     result = util.stats(region, puuid, token, entitlement)
+    
+      
     print(result)
 
 @slash.slash(name="matchstats",
