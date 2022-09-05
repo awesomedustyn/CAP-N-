@@ -398,6 +398,7 @@ def matchStats(region, puuid, entitlement, token):
   y = r.json()
   r2 = requests.get(url2, headers=headers)
   x = r2.json()
+  loadout = x['Loadout']['Items']
   print(y)
   print(x)
   if str(r.status_code) != "200":
@@ -408,6 +409,9 @@ def matchStats(region, puuid, entitlement, token):
   if y['ModeID'] == '/Game/GameModes/Deathmatch/DeathmatchGameMode.DeathmatchGameMode_C':
     ffa = True
   if ffa == False:
+    for i in loadout:
+      skin = weaponsDictionary[loadout[i]['9c82e19d-4575-0200-1a81-3eacf00cf872']['Sockets']['3ad1b2b2-acdb-4524-852f-954a76ddae0a']["Item"]["ID"]]
+      print(skin)
     output = {}
     output['status'] = 200
     output['ffa'] = 0
