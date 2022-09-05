@@ -374,6 +374,7 @@ def getCurrentMatchID(region, puuid, entitlement, token):
   }
   r = requests.get(url, headers=headers)
   y = r.text
+  print(y)
   if str(r.status_code) != "200":
     return "-1"
   else:
