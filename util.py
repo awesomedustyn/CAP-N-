@@ -396,8 +396,8 @@ def matchStats(region, puuid, entitlement, token):
   }
   r = requests.get(url, headers=headers)
   y = r.json()
-  r = get(url2, headers=headers)
-  x = r.json()
+  r2 = requests.get(url2, headers=headers)
+  x = r2.json()
   print(y)
   print(x)
   if str(r.status_code) != "200":
