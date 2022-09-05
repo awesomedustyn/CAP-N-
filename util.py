@@ -400,7 +400,6 @@ def matchStats(region, puuid, entitlement, token):
   x = r2.json()
   loadout = x['Loadout']['Items']
   print(y)
-  print(x)
   if str(r.status_code) != "200":
     output = {'status': -1}
     return output
