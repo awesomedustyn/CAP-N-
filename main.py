@@ -265,6 +265,39 @@ async def _balance(ctx):
   if hasLogin == False:
     embedVar =   discord.Embed(title="Error!",description="CAP'N couldn't find log ins, use /login to log in!", color=0xF85252)
     await ctx.reply(embed=embedVar, hidden=True)
+    
+    
+@slash.slash(name="stats",
+              description="Link your valorant account to the bot for certain commands",
+            )
+
+async def _stats(ctx):
+  hasLogin = False
+  password = ""
+  username = ""
+  token = ""
+  entitlement = ""
+  puuid = ""
+  userId = str(ctx.author.id)
+  userId = util.encrypt(userId)
+  f = open("logins.json", "r")
+  util.loginsDictionary = json.load(f)
+  f.close()
+  if userId in util.loginsDictionary:
+    embedvar = discord.Embed(title=f"{ctx.author.display_name}'s stats",description="stats")
+    embedvar.timestamp = datetime.utcnow() 
+    embedvar.set_footer(text='\u200b',icon_url="https://cdn.publish0x.com/prod/fs/images/6ac0ff5feb2e723eaa18dace82b96ab9aca5ed93038ad2d739f3d58132cc3bed.png")
+    await ctx.reply(embed=embedvar)
+    hasLogin = True
+    username = util.decrypt(util.loginsDictionary[userId][0])
+    password = util.decrypt(util.loginsDictionary[userId][1])
+    region = util.loginsDictionary[userId][2]
+    TnEN = await auth.getToken(username, password)
+    token = TnEN[0]
+    entitlement = TnEN[1]
+    puuid = await util.getPUUID(token)
+    result = util.stats(region, puuid, token, entitlement)
+    print(result)
 
 @slash.slash(name="matchstats",
               description="Link your valorant account to the bot for certain commands",
