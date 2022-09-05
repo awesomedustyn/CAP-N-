@@ -389,7 +389,7 @@ def matchStats(region, puuid, entitlement, token):
     output = {'status': -1}
     return output
   url = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/matches/{matchid}'
-  url2 = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/matches/4c10454e-6185-49cf-9863-f36c0e8e9df9/loadouts'
+  url2 = f'https://glz-{region}-1.{region}.a.pvp.net/core-game/v1/matches/{matchid}/loadouts'
   headers = {
         'X-Riot-Entitlements-JWT': entitlement,
         'Authorization': f'Bearer {token}'
